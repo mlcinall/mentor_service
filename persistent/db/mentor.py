@@ -11,3 +11,4 @@ class Mentor(Base, WithId):
     info = Column(Text, nullable=True)
     calls = relationship("Call", back_populates="mentor")
     requests = relationship("Request", back_populates="mentor")
+    time = relationship("MentorTime", back_populates="mentor")
