@@ -11,6 +11,7 @@ from repository.request_repository import RequestRepository
 from utils.utils_checkers import time_checker
 
 class StudentService:
+    # TODO: из внешней вебапы проверить на существование юзеров
     def __init__(self) -> None:
         self.mentor_repository = MentorRepository()
         self.request_repository = RequestRepository()
@@ -19,11 +20,14 @@ class StudentService:
             self,
             mentor_id: UUID,
             guest_id: UUID,
-            description: str) -> UUID:
+            description: str) -> Optional[UUID]:
         """
         Отправляет запрос на переписку
         """
-        #TODO: проверка на то, что данные челы вообще есть
+        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+            logger.info(f"Ментора с id {mentor_id} не существует")
+            return
+
         request_id = await self.request_repository.create_request(
             call_type=1, mentor_id=mentor_id, guest_id=guest_id, description=description
         )
@@ -36,11 +40,13 @@ class StudentService:
             mentor_id: UUID,
             guest_id: UUID,
             description: str,
-            call_time: datetime) -> UUID | None:
+            call_time: datetime) -> Optional[UUID]:
         """
         Отправляет запрос на звонок
         """
-        #TODO: тоже добавить проверку на существование челов
+        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+            logger.info(f"Ментора с id {mentor_id} не существует")
+            return
         time_list = await self.request_repository.get_all_requests_by_mentor_id(mentor_id=mentor_id)
 
         if not time_list:
