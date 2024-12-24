@@ -5,17 +5,19 @@ from typing import cast
 from datetime import time as Time
 
 
-class MentorRepository:
+class MentorTimeRepository:
     def __init__(self) -> None:
         self._sessionmaker = pg_connection()
 
     async def create_mentor_time(self,
                             day: int,
-                            time: Time,
+                            time_start: Time,
+                            time_end: Time,
                             mentor_id: UUID) -> UUID | None:
         # if day not in range(1, 8):
         #     raise ValueError("error: day out of range")
-        stmp = insert(MentorTime).values({"day": day, "time": time, "mentor_id": mentor_id})
+        stmp = insert(MentorTime).values({"day": day, "time_start": time_start,
+                                          "time_end": time_end, "mentor_id": mentor_id})
 
         async with self._sessionmaker() as session:
             result = await session.execute(stmp)

@@ -39,3 +39,12 @@ class MentorRepository:
 
         row = resp.fetchone()
         return row[0] if row else None
+
+    async def get_mentor_by_tg_id(self, tg_id: str) -> Mentor | None:
+        stmp = select(Mentor).where(cast("ColumnElement[bool]", Mentor.telegram_id == tg_id)).limit(1)
+
+        async with self._sessionmaker() as session:
+            resp = await session.execute(stmp)
+
+        row = resp.fetchone()
+        return row[0] if row else None
