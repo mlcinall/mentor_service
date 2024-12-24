@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import defaultdict
 from typing import List, Optional
 from loguru import logger
 from sqlalchemy import UUID
@@ -6,12 +7,13 @@ from sqlalchemy import UUID
 from persistent.db.mentor import Mentor
 from persistent.db.mentor_time import MentorTime
 from repository.mentors_repository import MentorRepository
+from repository.request_repository import RequestRepository
 
 
 class MentorService:
-    #TODO: Добавить функцию с количеством запросов на ментора
     def __init__(self) -> None:
         self.mentor_repository = MentorRepository()
+        self.request_repository = RequestRepository()
 
     async def get_all_mentors(self) -> List[Mentor]:
         """
@@ -56,3 +58,12 @@ class MentorService:
         if not mentor:
             logger.warning(f"Товарища ментора с телегой {tg_id} не удалось найти.")
         return mentor
+
+    async def count_requests(self, mentor_id: UUID) -> dict:
+        mentor_requests = await self.request_repository.get_all_requests_by_mentor_id(mentor_id)
+
+        catt_type_count = defaultdict(int)
+        for request in mentor_requests:
+            catt_type_count[request.call_type] += 1
+
+        return dict(catt_type_count)
