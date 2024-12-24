@@ -13,8 +13,8 @@ class MentorRepository:
                             day: int,
                             time: Time,
                             mentor_id: UUID) -> UUID | None:
-        if day not in range(1, 8):
-            raise ValueError("error: day out of range")
+        # if day not in range(1, 8):
+        #     raise ValueError("error: day out of range")
         stmp = insert(MentorTime).values({"day": day, "time": time, "mentor_id": mentor_id})
 
         async with self._sessionmaker() as session:

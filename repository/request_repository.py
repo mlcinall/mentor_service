@@ -16,8 +16,8 @@ class RequestRepository:
                              guest_id: UUID,
                              description: str,
                              call_time: datetime | None = None) -> UUID:
-        if call_type == 0 and not call_time:
-            raise ValueError("error: no time specified for calling")
+        # if call_type == 0 and not call_time:
+        #     raise ValueError("error: no time specified for calling")
 
         stmt = insert(Request).values({
             "call_type": call_type,
