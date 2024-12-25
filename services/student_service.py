@@ -60,7 +60,10 @@ class StudentService:
         else:
             logger.warning("Данное время у ментора занято")
             return
-        #TODO: Добавить возможность брони времени
+
+        if self.request_repository.check_time_reservation(call_time):
+            logger.warning("Данное время у ментора забронировано")
+            return
 
         request_id = await self.request_repository.create_request(
             call_type=0, mentor_id=mentor_id, guest_id=guest_id,

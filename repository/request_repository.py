@@ -60,6 +60,16 @@ class RequestRepository:
             requests = [row[0] for row in rows]
             return requests
 
+    async def get_all_requests_by_time(self, time: datetime) -> list[Request] | None:
+        stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time))
+
+        async with self._sessionmaker() as session:
+            resp = await session.execute(stmt)
+
+            rows = resp.fetchall()
+            requests = [row[0] for row in rows]
+            return requests
+
     async def get_request_by_id(self, request_id: UUID) -> Request | None:
         stmp = select(Request).where(cast("ColumnElement[bool]", Request.id == request_id)).limit(1)
 
@@ -71,3 +81,17 @@ class RequestRepository:
             return None
 
         return row[0]
+
+    async def check_time_reservation(self, time: datetime) -> bool:
+        stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time))
+
+        async with self._sessionmaker() as session:
+            resp = await session.execute(stmt)
+
+            rows = resp.fetchall()
+            requests = [row[0] for row in rows]
+
+            for request in requests:
+                if request.response != 0:
+                    return True
+            return False

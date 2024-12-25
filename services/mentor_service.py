@@ -5,6 +5,7 @@ from loguru import logger
 from sqlalchemy import UUID
 
 from persistent.db.mentor import Mentor
+from persistent.db.request import Request
 from persistent.db.mentor_time import MentorTime
 from repository.mentors_repository import MentorRepository
 from repository.request_repository import RequestRepository
@@ -60,10 +61,43 @@ class MentorService:
         return mentor
 
     async def count_requests(self, mentor_id: UUID) -> dict:
+        """
+        Возвращает количество неотвеченных запросов.
+        """
         mentor_requests = await self.request_repository.get_all_requests_by_mentor_id(mentor_id)
 
-        catt_type_count = defaultdict(int)
+        call_type_count = defaultdict(int)
         for request in mentor_requests:
-            catt_type_count[request.call_type] += 1
+            if request.response == 0:
+                call_type_count[request.call_type] += 1
 
-        return dict(catt_type_count)
+        return dict(call_type_count)
+
+    async def get_requests(self, mentor_id: UUID) -> List[Request]:
+        """
+        Возвращает список неотвеченных запросов.
+        """
+        mentor_requests = await self.request_repository.get_all_requests_by_mentor_id(mentor_id)
+        ignored_requests = []
+        for request in mentor_requests:
+            if request.response == 0:
+                ignored_requests.append(request)
+
+        return ignored_requests
+
+    async def response_to_request(self, mentor_id: UUID, request_id: UUID, response: int) -> None:
+        """
+        Отмечает статус запроса. 1 -- принят, -1 -- отклонён
+        """
+        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+            logger.info(f"Ментора с id {mentor_id} не существует")
+            return
+        if not self.request_repository.get_request_by_id(request_id):
+            logger.info(f"Запроса №{request_id} не существует")
+            return
+
+        await self.request_repository.mentor_response(request_id=request_id, response=response)
+        if response == 1:
+            logger.info(f"Запрос №{request_id} принят")
+        else:
+            logger.info(f"Запрос №{request_id} отклонён")
