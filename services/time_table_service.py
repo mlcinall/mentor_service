@@ -17,15 +17,45 @@ class MentorTimeService:
     def __init__(self) -> None:
         self.mentor_time_repository = MentorTimeRepository()
         self.request_repository = RequestRepository()
+        self.mentor_repository = MentorRepository()
 
     async def create_mentor_time(self,
                                  day: int,
                                  time_start: Time,
                                  time_end: Time,
-                                 mentor_id: UUID) -> UUID:
+                                 mentor_id: UUID) -> Optional[UUID]:
         """
         Создаёт новый промежуток свободного времени
         """
+        if day not in range(1, 8):
+            logger.warning("Неверно указан день")
+            return
+
+        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+            logger.info(f"Ментора с id {mentor_id} не существует")
+            return
+
+        mentor_time_list = await self.mentor_time_repository.get_all_mentor_time_by_mentor_id(mentor_id)
+
+        flag_uuid = None
+
+        for mentor_time in mentor_time_list:
+            if mentor_time.day == day:
+                if time_checker(day=day, time_start=time_start,
+                                time_end=time_end, call_time=mentor_time.time_start):
+
+                    await self.mentor_time_repository.update_mentor_time(
+                        mentor_time_id=mentor_time.id,time_start=time_start, time_end=mentor_time.time_end)
+                    flag_uuid = mentor_time.id
+
+                if time_checker(day=day, time_start=time_start, time_end=time_end, call_time=mentor_time.time_end):
+                    await self.mentor_time_repository.update_mentor_time(
+                        mentor_time_id=mentor_time.id, time_start=mentor_time.time_start, time_end=time_end)
+                    flag_uuid = mentor_time.id
+
+        if flag_uuid:
+            return flag_uuid
+
         mentor_time_id = await self.mentor_time_repository.create_mentor_time(
             day=day, time_start=time_start, time_end=time_end, mentor_id=mentor_id
         )
