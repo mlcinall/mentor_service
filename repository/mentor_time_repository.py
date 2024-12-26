@@ -1,7 +1,7 @@
 from infrastructure.db.connection import pg_connection
 from persistent.db.mentor_time import MentorTime
 from sqlalchemy import insert, select, UUID, update
-from typing import cast
+from typing import cast, Optional
 from datetime import time as Time
 
 
@@ -13,7 +13,7 @@ class MentorTimeRepository:
                             day: int,
                             time_start: Time,
                             time_end: Time,
-                            mentor_id: UUID) -> UUID | None:
+                            mentor_id: UUID) -> Optional[UUID]:
         # if day not in range(1, 8):
         #     raise ValueError("error: day out of range")
 
@@ -47,7 +47,7 @@ class MentorTimeRepository:
             mentor_time_list = [row[0] for row in rows]
             return mentor_time_list
 
-    async def get_all_mentor_time_by_mentor_id(self, mentor_id: UUID) -> list[MentorTime] | None:
+    async def get_all_mentor_time_by_mentor_id(self, mentor_id: UUID) -> Optional[list[MentorTime]]:
         stmt = select(MentorTime).where(cast("ColumnElement[bool]", MentorTime.mentor_id == mentor_id))
 
         async with self._sessionmaker() as session:
@@ -57,7 +57,7 @@ class MentorTimeRepository:
             mentor_time_list = [row[0] for row in rows]
             return mentor_time_list
 
-    async def get_mentor_time_by_id(self, mentor_time_id: UUID) -> MentorTime | None:
+    async def get_mentor_time_by_id(self, mentor_time_id: UUID) -> Optional[MentorTime]:
         stmp = select(MentorTime).where(cast("ColumnElement[bool]", MentorTime.id == mentor_time_id)).limit(1)
 
         async with self._sessionmaker() as session:

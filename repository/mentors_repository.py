@@ -1,7 +1,7 @@
 from infrastructure.db.connection import pg_connection
 from persistent.db.mentor import Mentor
 from sqlalchemy import insert, select, UUID
-from typing import cast
+from typing import cast, Optional
 
 
 class MentorRepository:
@@ -11,7 +11,7 @@ class MentorRepository:
     async def create_mentor(self,
                             tg_id: str,
                             name: str,
-                            info: str) -> UUID | None:
+                            info: str) -> Optional[UUID]:
         stmp = insert(Mentor).values({"telegram_id": tg_id, "name": name, "info": info})
 
         async with self._sessionmaker() as session:
@@ -31,7 +31,7 @@ class MentorRepository:
             mentors = [row[0] for row in rows]
             return mentors
 
-    async def get_mentor_by_id(self, mentor_id: UUID) -> Mentor | None:
+    async def get_mentor_by_id(self, mentor_id: UUID) -> Optional[Mentor]:
         stmp = select(Mentor).where(cast("ColumnElement[bool]", Mentor.id == mentor_id)).limit(1)
 
         async with self._sessionmaker() as session:
@@ -40,7 +40,7 @@ class MentorRepository:
         row = resp.fetchone()
         return row[0] if row else None
 
-    async def get_mentor_by_tg_id(self, tg_id: str) -> Mentor | None:
+    async def get_mentor_by_tg_id(self, tg_id: str) -> Optional[Mentor]:
         stmp = select(Mentor).where(cast("ColumnElement[bool]", Mentor.telegram_id == tg_id)).limit(1)
 
         async with self._sessionmaker() as session:

@@ -3,7 +3,7 @@ from persistent.db.request import Request
 from sqlalchemy import insert, select, update, UUID
 from datetime import datetime
 from persistent.db.request import Request
-from typing import cast
+from typing import cast, Optional
 
 
 class RequestRepository:
@@ -15,7 +15,7 @@ class RequestRepository:
                              mentor_id: UUID,
                              guest_id: UUID,
                              description: str,
-                             call_time: datetime | None = None) -> UUID:
+                             call_time: Optional[datetime] = None) -> Optional[UUID]:
         # if call_type == 0 and not call_time:
         #     raise ValueError("error: no time specified for calling")
 
@@ -50,7 +50,7 @@ class RequestRepository:
             requests = [row[0] for row in rows]
             return requests
 
-    async def get_all_requests_by_mentor_id(self, mentor_id: UUID) -> list[Request] | None:
+    async def get_all_requests_by_mentor_id(self, mentor_id: UUID) -> Optional[list[Request]]:
         stmt = select(Request).where(cast("ColumnElement[bool]", Request.mentor_id == mentor_id))
 
         async with self._sessionmaker() as session:
@@ -60,7 +60,7 @@ class RequestRepository:
             requests = [row[0] for row in rows]
             return requests
 
-    async def get_all_requests_by_time(self, time: datetime) -> list[Request] | None:
+    async def get_all_requests_by_time(self, time: datetime) -> Optional[list[Request]]:
         stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time))
 
         async with self._sessionmaker() as session:
@@ -70,7 +70,7 @@ class RequestRepository:
             requests = [row[0] for row in rows]
             return requests
 
-    async def get_request_by_id(self, request_id: UUID) -> Request | None:
+    async def get_request_by_id(self, request_id: UUID) -> Optional[Request]:
         stmp = select(Request).where(cast("ColumnElement[bool]", Request.id == request_id)).limit(1)
 
         async with self._sessionmaker() as session:
