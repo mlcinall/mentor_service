@@ -9,11 +9,11 @@ from pydantic import BaseModel
 
 from services.mentor_service import MentorService
 from services.student_service import StudentService
-from services.time_table_service import MentorTimeService
+from services.mentor_time_service import MentorTimeService
 
 from presentations.routers.mentor_router import mentor_router
 from presentations.routers.student_router import student_router
-from presentations.routers.time_table_router import time_table_router
+from presentations.routers.mentor_time_router import mentor_time_router
 
 mentor_service = MentorService()
 student_service = StudentService()
@@ -23,9 +23,11 @@ time_table_service = MentorTimeService()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Создаем мента и свободное окно для него
-    mentor_id = await mentor_service.create_mentor("@sup", "Super Idol", "super idol forever")
-    mtt_id = await time_table_service.create_mentor_time(1, Time.fromisoformat('08:00:00'), Time.fromisoformat('12:00:00'), mentor_id)
-
+    mentor_id = await mentor_service.get_mentor_by_tg_id("@sup")
+    if not mentor_id:
+        mentor_id = await mentor_service.create_mentor("@sup", "Super Idol", "super idol forever")
+        mtt_id = await time_table_service.create_mentor_time(1, Time.fromisoformat('08:00:00'), Time.fromisoformat('12:00:00'), mentor_id)
+    mentor_id = mentor_id.id
     #Проверяем свободные часы
     logger.info(f"Now exist this mentors '{await mentor_service.get_all_mentors()}'")
     logger.info(f"Mentors have '{await time_table_service.get_all_mentor_time()}' free time")
@@ -51,7 +53,10 @@ async def lifespan(app: FastAPI):
         call_request_id = None
     if call_request_id:
         try:
-            number = await time_table_service.count_requests_for_time(datetime.strptime("1/1/25 10:00:00", '%d/%m/%y %H:%M:%S'))
+            number = await time_table_service.count_requests_for_time(
+                request_time=datetime.strptime("1/1/25 10:00:00", '%d/%m/%y %H:%M:%S'),
+                mentor_id=mentor_id
+            )
             logger.info(f"Mentor has '{number}' requests on this time '{datetime.strptime('1/1/25 10:00:00', '%d/%m/%y %H:%M:%S')}'")
         except ValueError as e:
             logger.error(f"Error finding any requests: {e}")
@@ -89,7 +94,10 @@ async def lifespan(app: FastAPI):
         logger.error(f"Can't find that request: {e}")
 
     try:
-        stat = await time_table_service.check_time_reservation(datetime.strptime("01/01/25 10:00:00", '%d/%m/%y %H:%M:%S'))
+        stat = await time_table_service.check_time_reservation(
+            time=datetime.strptime("01/01/25 10:00:00", '%d/%m/%y %H:%M:%S'),
+            mentor_id=mentor_id
+        )
         if stat:
             logger.info(f"{datetime.strptime('1/1/25 10:00:00', '%d/%m/%y %H:%M:%S')} already occupied")
         else:
@@ -110,4 +118,4 @@ app = FastAPI(
 
 app.include_router(student_router)
 app.include_router(mentor_router)
-app.include_router(time_table_router)
+app.include_router(mentor_time_router)

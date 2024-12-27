@@ -18,6 +18,15 @@ class StudentService:
         self.request_repository = RequestRepository()
         self.mentor_time_repository = MentorTimeRepository()
 
+    async def get_all_requests(self) -> List[Request]:
+        """
+        Возвращает все запросы.
+        """
+        requests = await self.request_repository.get_all_requests()
+        if not requests:
+            logger.warning("Запросы не найдены")
+        return requests
+
     async def send_message_request(
             self,
             mentor_id: UUID,
@@ -74,3 +83,12 @@ class StudentService:
 
         logger.info(f"Запрос на созвон в {call_time.strftime('%H:%M %d/%m/%Y')} отправлен")
         return request_id
+
+    async def get_request_by_id(self, request_id: UUID) -> Optional[Request]:
+        """
+        Возвращает запрос по его ID.
+        """
+        request = await self.request_repository.get_request_by_id(request_id)
+        if not request:
+            logger.warning(f"Запрос с ID {request_id} не удалось найти.")
+        return request

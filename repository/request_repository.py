@@ -60,8 +60,9 @@ class RequestRepository:
             requests = [row[0] for row in rows]
             return requests
 
-    async def get_all_requests_by_time(self, time: datetime) -> Optional[list[Request]]:
-        stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time))
+    async def get_all_requests_by_time(self, mentor_id: UUID, time: datetime) -> Optional[list[Request]]:
+        stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time),
+                                     cast("ColumnElement[bool]", Request.mentor_id == mentor_id))
 
         async with self._sessionmaker() as session:
             resp = await session.execute(stmt)
@@ -82,8 +83,9 @@ class RequestRepository:
 
         return row[0]
 
-    async def check_time_reservation(self, time: datetime) -> bool:
-        stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time))
+    async def check_time_reservation(self, mentor_id: UUID, time: datetime) -> bool:
+        stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time),
+                                     cast("ColumnElement[bool]", Request.mentor_id == mentor_id))
 
         async with self._sessionmaker() as session:
             resp = await session.execute(stmt)

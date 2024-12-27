@@ -1,11 +1,9 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from loguru import logger
-from typing import Optional
 
 from services.mentor_service import MentorService
 
@@ -17,6 +15,7 @@ mentor_router = APIRouter(
     responses={404: {"description": "Not Found"}},
 )
 
+
 class MentorDto(BaseModel):
     id: UUID
     telegram_id: str
@@ -24,7 +23,7 @@ class MentorDto(BaseModel):
     info: str
 
 
-class RequestDto(MentorDto):
+class RequestDto(BaseModel):
     id: UUID
     call_type: bool
     time_sended: datetime
@@ -62,7 +61,7 @@ class GetMentorByTelegramIdGetResponse(BaseModel):
 
 class CountMentorRequestByIdGetResponse(BaseModel):
     call_requests: int
-    question_requests: int
+    message_requests: int
 
 
 class GetMentorRequestsByIdGetResponse(BaseModel):
@@ -179,7 +178,7 @@ async def get_by_id(mentor_id: UUID):
 
         return CountMentorRequestByIdGetResponse(
             call_requests=mentor_requests_cnt[0],
-            question_requests=mentor_requests_cnt[1],
+            message_requests=mentor_requests_cnt[1],
         )
     except HTTPException:
         raise
@@ -206,7 +205,8 @@ async def get_all_requests(mentor_id: UUID):
                                  mentor_id=request.mentor_id,
                                  guest_id=request.guest_id,
                                  description=request.description,
-                                 call_time=request.call_time,)
+                                 call_time=request.call_time,
+                                 response=request.response,)
                       for request in requests]
         )
     except HTTPException:

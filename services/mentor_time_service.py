@@ -116,11 +116,11 @@ class MentorTimeService:
 
         return times_list
 
-    async def count_requests_for_time(self, request_time: DateTime) -> int:
+    async def count_requests_for_time(self, mentor_id: UUID, request_time: DateTime) -> int:
         """
         Возвращает количество запросов на определённое время.
         """
-        mentor_requests = await self.request_repository.get_all_requests_by_time(time=request_time)
+        mentor_requests = await self.request_repository.get_all_requests_by_time(time=request_time, mentor_id=mentor_id)
 
         call_count = 0
         for request in mentor_requests:
@@ -129,8 +129,8 @@ class MentorTimeService:
 
         return call_count
 
-    async def check_time_reservation(self, time: DateTime) -> bool:
+    async def check_time_reservation(self, mentor_id: UUID, time: DateTime) -> bool:
         """
         Проверка занятости времени. True -- занято, False -- не занято.
         """
-        return await self.request_repository.check_time_reservation(time)
+        return await self.request_repository.check_time_reservation(time=time, mentor_id=mentor_id)
