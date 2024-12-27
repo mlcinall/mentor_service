@@ -11,6 +11,10 @@ from services.mentor_service import MentorService
 from services.student_service import StudentService
 from services.time_table_service import MentorTimeService
 
+from presentations.routers.mentor_router import mentor_router
+from presentations.routers.student_router import student_router
+from presentations.routers.time_table_router import time_table_router
+
 mentor_service = MentorService()
 student_service = StudentService()
 time_table_service = MentorTimeService()
@@ -98,17 +102,12 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown: cleaning up...")  # Действия при завершении приложения
 
 
-
-
 app = FastAPI(
-    title="BEST_WEBAPP_EVER",
-    description="IDAS IS NOT A KINDERGARTEN",
+    title="Микросервис для менторства ITAM",
+    description="ИСАД — это не детский сад",
     lifespan=lifespan,
 )
 
-class PutLink(BaseModel):
-    link: str
-
-
-def _service_link_to_real(short_link: str) -> str:
-    return f"http://localhost:8000/short/{short_link}"
+app.include_router(student_router)
+app.include_router(mentor_router)
+app.include_router(time_table_router)
