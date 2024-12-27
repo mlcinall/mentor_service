@@ -112,7 +112,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Микросервис для менторства ITAM",
-    description="ИСАД — это не детский сад",
+    description="ИСАД — это не детский сад\n\n"
+                "Отдельная благодарность Крюкову Александру Михайловичу (https://github.com/Auxxxxx)\n"
+                "Без него этого микросервиса не было бы",
     lifespan=lifespan,
 )
 

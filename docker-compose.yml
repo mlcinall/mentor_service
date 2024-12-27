@@ -10,7 +10,7 @@ services:
       APP_PG: '{"host": "postgres"}'
     depends_on:
       - postgres
-    image: "chuvirla1453/itam_mentors_202412272241"
+    image: "chuvirla1453/itam_mentors_202412280112"
     ports:
       # вывести ли порты в материнскую систему
       - 8000:8000
