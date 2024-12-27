@@ -6,9 +6,8 @@ from sqlalchemy.orm import relationship
 class Mentor(Base, WithId):
     __tablename__ = "mentors"
 
-    telegram_id = Column(String, nullable=True)
-    name = Column(String, nullable=True)
-    info = Column(Text, nullable=True)
-    calls = relationship("Call", back_populates="mentor")
+    telegram_id = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
+    info = Column(Text, nullable=False)
     requests = relationship("Request", back_populates="mentor")
     time = relationship("MentorTime", back_populates="mentor")

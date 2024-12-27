@@ -8,16 +8,15 @@ from datetime import datetime
 class Request(Base, WithId):
     __tablename__ = "requests"
 
-    call_type = Column(Boolean, nullable=True) # 0 -- call, 1 -- question
-    time_sended = Column(DateTime, default=datetime.now())
+    call_type = Column(Boolean, nullable=False) # 0 -- call, 1 -- question
+    time_sended = Column(DateTime, default=datetime.now(), nullable=False)
     mentor_id = Column(UUID(as_uuid=True), ForeignKey("mentors.id"))
-    guest_id = Column(UUID(as_uuid=True), nullable=True)
-    description = Column(Text, nullable=True)
+    guest_id = Column(UUID(as_uuid=True), nullable=False)
+    description = Column(Text, nullable=False)
 
     #if call_type == 0:
     call_time = Column(DateTime, nullable=True)
 
-    response = Column(Integer, nullable=True, default=0) # 0 -- not answered, 1-- yes, -1 -- no
+    response = Column(Integer, nullable=False, default=0) # 0 -- not answered, 1-- yes, -1 -- no
     mentor = relationship("Mentor", back_populates="requests")
-    call = relationship("Call", back_populates="request")
 
