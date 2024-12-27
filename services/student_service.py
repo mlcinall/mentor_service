@@ -7,6 +7,7 @@ from persistent.db.mentor import Mentor
 from persistent.db.request import Request
 from repository.mentors_repository import MentorRepository
 from repository.request_repository import RequestRepository
+from repository.mentor_time_repository import MentorTimeRepository
 
 from utils.utils_checkers import time_checker
 
@@ -15,6 +16,7 @@ class StudentService:
     def __init__(self) -> None:
         self.mentor_repository = MentorRepository()
         self.request_repository = RequestRepository()
+        self.mentor_time_repository = MentorTimeRepository()
 
     async def send_message_request(
             self,
@@ -24,7 +26,7 @@ class StudentService:
         """
         Отправляет запрос на переписку
         """
-        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+        if not await self.mentor_repository.get_mentor_by_id(mentor_id):
             logger.info(f"Ментора с id {mentor_id} не существует")
             return
 
@@ -44,10 +46,10 @@ class StudentService:
         """
         Отправляет запрос на звонок
         """
-        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+        if not await self.mentor_repository.get_mentor_by_id(mentor_id):
             logger.info(f"Ментора с id {mentor_id} не существует")
             return
-        time_list = await self.request_repository.get_all_requests_by_mentor_id(mentor_id=mentor_id)
+        time_list = await self.mentor_time_repository.get_all_mentor_time_by_mentor_id(mentor_id=mentor_id)
 
         if not time_list:
             logger.warning("У данного ментора нет свободного времени")
@@ -61,7 +63,7 @@ class StudentService:
             logger.warning("Данное время у ментора занято")
             return
 
-        if self.request_repository.check_time_reservation(call_time):
+        if await self.request_repository.check_time_reservation(call_time):
             logger.warning("Данное время у ментора забронировано")
             return
 

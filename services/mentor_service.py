@@ -89,10 +89,10 @@ class MentorService:
         """
         Отмечает статус запроса. 1 -- принят, -1 -- отклонён
         """
-        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+        if not await self.mentor_repository.get_mentor_by_id(mentor_id):
             logger.info(f"Ментора с id {mentor_id} не существует")
             return
-        if not self.request_repository.get_request_by_id(request_id):
+        if not await self.request_repository.get_request_by_id(request_id):
             logger.info(f"Запроса №{request_id} не существует")
             return
 

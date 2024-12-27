@@ -23,10 +23,10 @@ async def lifespan(app: FastAPI):
     mtt_id = await time_table_service.create_mentor_time(1, Time.fromisoformat('08:00:00'), Time.fromisoformat('12:00:00'), mentor_id)
 
     #Проверяем свободные часы
-    logger.info(f"Now exist this mentors '{mentor_service.get_all_mentors()}'")
-    logger.info(f"Mentors have '{time_table_service.get_all_mentor_time()}' free time")
-    logger.info(f"Mentor {mentor_id} have free time on '{time_table_service.get_all_mentor_time_by_mentor_id(mentor_id)}'")
-    logger.info(f"Mentor {mentor_id} can call on '{time_table_service.get_call_times(1, mentor_id)}'")
+    logger.info(f"Now exist this mentors '{await mentor_service.get_all_mentors()}'")
+    logger.info(f"Mentors have '{await time_table_service.get_all_mentor_time()}' free time")
+    logger.info(f"Mentor {mentor_id} have free time on '{await time_table_service.get_all_mentor_time_by_mentor_id(mentor_id)}'")
+    logger.info(f"Mentor {mentor_id} can call on '{await time_table_service.get_call_times(1, mentor_id)}'")
 
     # Добавляем студентика и создаем запросы
     user_id = uuid4()
@@ -37,7 +37,10 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error creating request: {e}")
         message_request_id = None
     try:
-        call_request_id = await student_service.send_call_request(mentor_id, user_id, "sigma boy", datetime.strptime("01/01/25 10:00:00", '%d%m%y %H:%M:%S'))
+        call_request_id = await student_service.send_call_request(
+            mentor_id, user_id, "sigma boy",
+            datetime.strptime("01/01/25 10:00:00", '%d/%m/%y %H:%M:%S'))
+
         logger.info(f"Call request created with ID: {call_request_id}")
     except ValueError as e:
         logger.error(f"Error creating request: {e}")
@@ -51,23 +54,23 @@ async def lifespan(app: FastAPI):
 
     # Проверяем поиск менторов по нику
     try:
-        logger.info(f"Here is your mentor: {mentor_service.get_mentor_by_id(mentor_id)}")
+        logger.info(f"Here is your mentor: {await mentor_service.get_mentor_by_id(mentor_id)}")
     except ValueError as e:
         logger.error(f"Can't find that mentor: {e}")
 
     try:
-        logger.info(f"Here is your mentor: {mentor_service.get_mentor_by_tg_id('@sup')}")
+        logger.info(f"Here is your mentor: {await mentor_service.get_mentor_by_tg_id('@sup')}")
     except ValueError as e:
         logger.error(f"Can't find that mentor: {e}")
 
     # Одобряем запрос и проводим проверку
     try:
-        logger.info(f"Mentor has: {mentor_service.count_requests(mentor_id)} requests")
+        logger.info(f"Mentor has: {await mentor_service.count_requests(mentor_id)} requests")
     except ValueError as e:
         logger.error(f"Can't find that mentor: {e}")
 
     try:
-        logger.info(f"Mentors' requests: {mentor_service.get_requests(mentor_id)}")
+        logger.info(f"Mentors' requests: {await mentor_service.get_requests(mentor_id)}")
     except ValueError as e:
         logger.error(f"Can't find that mentor: {e}")
 
@@ -82,7 +85,7 @@ async def lifespan(app: FastAPI):
         logger.error(f"Can't find that request: {e}")
 
     try:
-        stat = await time_table_service.check_time_reservation(datetime.strptime("01/01/25 10:00:00", '%d%m%y %H:%M:%S'))
+        stat = await time_table_service.check_time_reservation(datetime.strptime("01/01/25 10:00:00", '%d/%m/%y %H:%M:%S'))
         if stat:
             logger.info(f"{datetime.strptime('1/1/25 10:00:00', '%d/%m/%y %H:%M:%S')} already occupied")
         else:

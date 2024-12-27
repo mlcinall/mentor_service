@@ -31,7 +31,7 @@ class MentorTimeService:
             logger.warning("Неверно указан день")
             return
 
-        if not self.mentor_repository.get_mentor_by_id(mentor_id):
+        if not await self.mentor_repository.get_mentor_by_id(mentor_id):
             logger.info(f"Ментора с id {mentor_id} не существует")
             return
 
@@ -56,7 +56,7 @@ class MentorTimeService:
         if flag_uuid:
             return flag_uuid
 
-        mentor_time_id = await self.mentor_time_repository.create_mentor_time(
+        mentor_time_id = await self.mentor_time_repository.create_new_mentor_time(
             day=day, time_start=time_start, time_end=time_end, mentor_id=mentor_id
         )
 
