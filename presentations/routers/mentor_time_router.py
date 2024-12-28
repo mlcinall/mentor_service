@@ -98,7 +98,7 @@ async def get_all():
 
 
 @mentor_time_router.post("/", response_model=CreateMentorTimeRequestGetResponse, status_code=201)
-async def create_message(mentor_time_request: CreateMentorTimeRequestPostRequest):
+async def create_mentor_time(mentor_time_request: CreateMentorTimeRequestPostRequest):
     """
     Create a new mentor time.
 
@@ -191,7 +191,7 @@ async def count_requests(mentor_id: UUID, request_time: datetime):
 
 
 @mentor_time_router.get("/check/{mentor_id}/{request_time}", response_model=CheckMentorTimeGetRequest)
-async def count_requests(mentor_id: UUID, request_time: datetime):
+async def check_request(mentor_id: UUID, request_time: datetime):
     """
     Check is time booked for mentor.
 

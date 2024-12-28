@@ -16,10 +16,10 @@ class MentorRepository:
 
         async with self._sessionmaker() as session:
             result = await session.execute(stmp)
-            hackathon_id = result.inserted_primary_key[0]
+            mentor_id = result.inserted_primary_key[0]
             await session.commit()
 
-        return hackathon_id
+        return mentor_id
 
     async def get_all_mentors(self) -> list[Mentor]:
         stmt = select(Mentor)

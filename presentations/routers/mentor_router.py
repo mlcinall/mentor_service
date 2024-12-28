@@ -138,7 +138,7 @@ async def get_by_id(mentor_id: UUID):
 
 
 @mentor_router.get("/{telegram_id}", response_model=GetMentorByTelegramIdGetResponse)
-async def get_by_id(telegram_id: str):
+async def get_by_tg_id(telegram_id: str):
     """
     Get details of a mentor by their telegram ID.
 
@@ -163,7 +163,7 @@ async def get_by_id(telegram_id: str):
 
 
 @mentor_router.get("/count/{mentor_id}", response_model=CountMentorRequestByIdGetResponse)
-async def get_by_id(mentor_id: UUID):
+async def count_by_id(mentor_id: UUID):
     """
     Count unanswered requests of a mentor by their ID.
 
@@ -187,7 +187,7 @@ async def get_by_id(mentor_id: UUID):
 
 
 @mentor_router.get("/get_requests/{mentor_id}", response_model=GetMentorRequestsByIdGetResponse)
-async def get_all_requests(mentor_id: UUID):
+async def get_all_requests_by_id(mentor_id: UUID):
     """
     Get all requests of a mentor by their ID.
 
