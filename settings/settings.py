@@ -6,11 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Postgres(BaseModel):
-    database: str = ""
-    host: str = ""
+    database: str = "db_main"
+    host: str = "postgres"
     port: int = 5432
-    username: str = ""
-    password: str = ""
+    username: str = "db_main"
+    password: str = "db_main"
 
 
 class Uvicorn(BaseModel):
