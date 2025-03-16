@@ -2,15 +2,19 @@ version: '3.8'
 
 services:
   backend:
-
     restart: always
     environment:
-      # переменные окружения
-      APP_UVICORN: '{"host": "0.0.0.0", "port": 8000}'
-      APP_PG: '{"host": "postgres"}'
+      APP_UVICORN: '{"host": "0.0.0.0", "port": 8000}'   # сделал переменные окружения не из env файла ибо кубернетис берет переменные не из файла
+      APP_PG__HOST: "postgres"  
+      APP_PG__DATABASE: "db_main"
+      APP_PG__PORT: "5432"       
+      APP_PG__USERNAME: "db_main"
+      APP_PG__PASSWORD: "db_main"
     depends_on:
       - postgres
-    image: "chuvirla1453/itam_mentors_202412281619"
+    build:
+      context: ./
+      dockerfile: Dockerfile  # кмк удобнее сразу локально билдить чем с докерхаба каждый раз пулить  не принципиально
     ports:
       # вывести ли порты в материнскую систему
       - 8000:8000
@@ -27,4 +31,9 @@ services:
       - "5432:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./data/pg/:/var/lib/postgresql/data/
+      - pgdata:/var/lib/postgresql/data  # не советую заливать на гит и хранить в одной папке с проектом вольюм бд, лучше хранить по стандартному докеровскому пути
+    
+
+
+volumes:
+  pgdata:
