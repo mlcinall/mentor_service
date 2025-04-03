@@ -3,7 +3,8 @@ from datetime import datetime
 from uuid import uuid4
 from datetime import time as Time
 
-from fastapi import FastAPI, HTTPException, Path, Response, status
+from fastapi import FastAPI, HTTPException, Path, Response, status, Depends, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
 from pydantic import BaseModel
 
@@ -15,6 +16,12 @@ from presentations.routers.mentor_router import mentor_router
 from presentations.routers.student_router import student_router
 from presentations.routers.mentor_time_router import mentor_time_router
 
+from utils.jwt_utils import extract_user_id
+from utils.jwt_auth import JWTAuthMiddleware
+
+# Создаем объект схемы безопасности для Swagger UI
+security_scheme = HTTPBearer()
+
 mentor_service = MentorService()
 student_service = StudentService()
 time_table_service = MentorTimeService()
@@ -23,12 +30,15 @@ time_table_service = MentorTimeService()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Создаем мента и свободное окно для него
-    mentor_id = await mentor_service.get_mentor_by_tg_id("@sup")
-    if not mentor_id:
+    mentor = await mentor_service.get_mentor_by_tg_id("@sup")
+    if not mentor:
         mentor_id = await mentor_service.create_mentor("@sup", "Super Idol", "super idol forever")
         mtt_id = await time_table_service.create_mentor_time(1, Time.fromisoformat('08:00:00'), Time.fromisoformat('12:00:00'), mentor_id)
-    mentor_id = mentor_id.id
-    #Проверяем свободные часы
+        mentor_id = mentor_id  # Keep the UUID as is
+    else:
+        mentor_id = mentor.id  # Use the id from the mentor object
+    
+    # Проверяем свободные часы
     logger.info(f"Now exist this mentors '{await mentor_service.get_all_mentors()}'")
     logger.info(f"Mentors have '{await time_table_service.get_all_mentor_time()}' free time")
     logger.info(f"Mentor {mentor_id} have free time on '{await time_table_service.get_all_mentor_time_by_mentor_id(mentor_id)}'")
@@ -116,8 +126,29 @@ app = FastAPI(
                 "Отдельная благодарность Крюкову Александру Михайловичу (https://github.com/Auxxxxx)\n"
                 "Без него этого микросервиса не было бы",
     lifespan=lifespan,
+    swagger_ui_parameters={"persistAuthorization": True}
 )
 
+# Add JWT authentication middleware
+app.add_middleware(
+    JWTAuthMiddleware,
+    exclude_paths=["/docs", "/redoc", "/openapi.json"]
+)
+
+# Добавляем схему безопасности в спецификацию OpenAPI
+app.openapi_components = {
+    "securitySchemes": {
+        "HTTPBearer": {
+            "type": "http",
+            "scheme": "bearer"
+        }
+    }
+}
+
+# Применяем схему безопасности ко всем операциям (routes)
+app.openapi_security = [{"HTTPBearer": []}]
+
+# Create dependencies for routers
 app.include_router(student_router)
 app.include_router(mentor_router)
 app.include_router(mentor_time_router)
