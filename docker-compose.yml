@@ -10,7 +10,7 @@ volumes:
 services:
   backend:
     container_name: mentor-backend
-    image: auxxxxx/itam_mentor_service202504031925
+    image: auxxxxx/itam_mentor_service202504032057
     restart: always
     ports:
       - "8000:8000"
@@ -23,6 +23,10 @@ services:
       - APP_UVICORN__HOST=0.0.0.0
       - APP_UVICORN__PORT=8000
       - APP_UVICORN__WORKERS=1
+      - APP_CORS__ALLOW_ORIGINS=["*"]
+      - APP_CORS__ALLOW_CREDENTIALS=false
+      - APP_CORS__ALLOW_METHODS=["*"]
+      - APP_CORS__ALLOW_HEADERS=["*"]
       - DEBUG=true
     depends_on:
       - postgres

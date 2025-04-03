@@ -3,6 +3,7 @@ import multiprocessing as mp
 from loguru import logger
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
 
 
 class Postgres(BaseModel):
@@ -18,9 +19,17 @@ class Uvicorn(BaseModel):
     workers: int = 1
 
 
+class CORS(BaseModel):
+    allow_origins: List[str] = ["*"]
+    allow_credentials: bool = False
+    allow_methods: List[str] = ["*"]
+    allow_headers: List[str] = ["*"]
+
+
 class _Settings(BaseSettings):
     pg: Postgres = Postgres()
     uvicorn: Uvicorn = Uvicorn()
+    cors: CORS = CORS()
 
     model_config = SettingsConfigDict(env_prefix="app_", env_nested_delimiter="__")
 

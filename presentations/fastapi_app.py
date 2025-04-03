@@ -5,6 +5,7 @@ from datetime import time as Time
 
 from fastapi import FastAPI, HTTPException, Path, Response, status, Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from pydantic import BaseModel
 
@@ -18,6 +19,7 @@ from presentations.routers.mentor_time_router import mentor_time_router
 
 from utils.jwt_utils import extract_user_id
 from utils.jwt_auth import JWTAuthMiddleware
+from settings.settings import settings
 
 # Создаем объект схемы безопасности для Swagger UI
 security_scheme = HTTPBearer()
@@ -127,6 +129,15 @@ app = FastAPI(
                 "Без него этого микросервиса не было бы",
     lifespan=lifespan,
     swagger_ui_parameters={"persistAuthorization": True}
+)
+
+# Добавляем CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors.allow_origins,
+    allow_credentials=settings.cors.allow_credentials,
+    allow_methods=settings.cors.allow_methods,
+    allow_headers=settings.cors.allow_headers,
 )
 
 # Add JWT authentication middleware

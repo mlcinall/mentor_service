@@ -29,6 +29,11 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
         Returns:
             Response: The response from the route handler
         """
+        # Skip authorization for OPTIONS requests (CORS preflight)
+        if request.method == "OPTIONS":
+            logger.debug(f"Skipping authentication for OPTIONS request: {request.url.path}")
+            return await call_next(request)
+            
         # Check if the path is excluded from authentication
         for path in self.exclude_paths:
             if request.url.path.startswith(path):
