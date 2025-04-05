@@ -1,39 +1,52 @@
-version: '3.8'
+version: '3'
 
-services:
-  backend:
-    restart: always
-    environment:
-      APP_UVICORN: '{"host": "0.0.0.0", "port": 8000}'   # сделал переменные окружения не из env файла ибо кубернетис берет переменные не из файла
-      APP_PG__HOST: "postgres"  
-      APP_PG__DATABASE: "db_main"
-      APP_PG__PORT: "5432"       
-      APP_PG__USERNAME: "db_main"
-      APP_PG__PASSWORD: "db_main"
-    depends_on:
-      - postgres
-    build:
-      context: ./
-      dockerfile: Dockerfile  # кмк удобнее сразу локально билдить чем с докерхаба каждый раз пулить  не принципиально
-    ports:
-      # вывести ли порты в материнскую систему
-      - 8000:8000
-
-  postgres:
-    image: postgres:17.0 # какой image скачать с docket-hub
-    environment:
-      POSTGRES_USER: db_main
-      POSTGRES_PASSWORD: db_main
-      PGUSER: db_main
-      PGPASSWORD: db_main
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - pgdata:/var/lib/postgresql/data  # не советую заливать на гит и хранить в одной папке с проектом вольюм бд, лучше хранить по стандартному докеровскому пути
-    
-
+networks:
+  backend-network:
+    driver: bridge
 
 volumes:
   pgdata:
+
+services:
+  backend:
+    container_name: mentor-backend
+    image: auxxxxx/itam_mentor_service202504032057
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_PG__HOST=postgres
+      - APP_PG__USERNAME=db_main
+      - APP_PG__PASSWORD=db_main
+      - APP_PG__DATABASE=db_main
+      - APP_PG__PORT=5432
+      - APP_UVICORN__HOST=0.0.0.0
+      - APP_UVICORN__PORT=8000
+      - APP_UVICORN__WORKERS=1
+      - APP_CORS__ALLOW_ORIGINS=["*"]
+      - APP_CORS__ALLOW_CREDENTIALS=false
+      - APP_CORS__ALLOW_METHODS=["*"]
+      - APP_CORS__ALLOW_HEADERS=["*"]
+      - DEBUG=true
+    depends_on:
+      - postgres
+    networks:
+      - backend-network
+
+  postgres:
+    container_name: mentor-postgres
+    image: postgres:17.0
+    restart: always
+    environment:
+      - POSTGRES_USER=db_main
+      - POSTGRES_PASSWORD=db_main
+      - POSTGRES_DB=db_main
+      - PGUSER=db_main
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - backend-network
