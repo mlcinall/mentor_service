@@ -86,7 +86,9 @@ async def lifespan(app: FastAPI):
 
     # Одобряем запрос и проводим проверку
     try:
-        logger.info(f"Mentor has: {await mentor_service.count_requests(mentor_id)} requests")
+        req_counts = await mentor_service.count_requests(mentor_id)
+        logger.info(
+            f"Mentor has {req_counts['call_requests']} call requests and {req_counts['message_requests']} message requests")
     except ValueError as e:
         logger.error(f"Can't find that mentor: {e}")
 
