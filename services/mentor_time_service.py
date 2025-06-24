@@ -25,9 +25,11 @@ class MentorTimeService:
                                  time_end: Time,
                                  mentor_id: UUID) -> Optional[UUID]:
         """
-        Создаёт новый промежуток свободного времени
+        Создаёт новый промежуток свободного времени.
+
+        ``day`` должен быть в диапазоне от 0 до 6, где 0 -- понедельник.
         """
-        if day not in range(1, 8):
+        if not (0 <= day <= 6):
             logger.warning("Неверно указан день")
             return
 

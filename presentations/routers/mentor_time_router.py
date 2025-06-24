@@ -109,6 +109,7 @@ async def create_mentor_time(mentor_time_request: CreateMentorTimeRequestPostReq
     Create a new mentor time.
 
     - **day**: number of the day of the week. For example 0 -- Monday, 1 -- Tuesday, etc.
+      Valid range is 0..6.
     - **time_start**: Start time of the free mentor time.
     - **time_end**: End time of the free mentor time.
     - **mentor_id**: Unique identifier of the mentor.
@@ -167,6 +168,7 @@ async def get_possible_time(mentor_id: UUID, day: int, user_id: UUID = Depends(e
 
     - **mentor_id**: Unique identifier of the mentor.
     - **day**: number of the day of the week. For example 0 -- Monday, 1 -- Tuesday, etc.
+      Valid range is 0..6.
 
     Authorization header required with Bearer token containing user_id.
 
