@@ -10,12 +10,14 @@ from persistent.db.request import Request
 from persistent.db.mentor_time import MentorTime
 from repository.mentors_repository import MentorRepository
 from repository.request_repository import RequestRepository
+from services.mentor_time_service import MentorTimeService
 
 
 class MentorService:
     def __init__(self) -> None:
         self.mentor_repository = MentorRepository()
         self.request_repository = RequestRepository()
+        self.mentor_time_service = MentorTimeService()
 
     async def get_all_mentors(self) -> List[Mentor]:
         """
