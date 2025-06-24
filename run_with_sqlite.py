@@ -26,7 +26,13 @@ def create_tables():
         id TEXT PRIMARY KEY,
         telegram_id TEXT NOT NULL UNIQUE,
         name TEXT NOT NULL,
-        info TEXT NOT NULL
+        info TEXT NOT NULL,
+        about TEXT,
+        specification TEXT,
+        role TEXT,
+        experience_periods TEXT,
+        hackathons TEXT,
+        work TEXT
     )
     ''')
     
