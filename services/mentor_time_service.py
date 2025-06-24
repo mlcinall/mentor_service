@@ -135,6 +135,6 @@ class MentorTimeService:
         """
         Проверка занятости времени. True -- занято, False -- не занято.
         Занятым считается время с запросами в статусе ``0`` (ожидает ответа)
-        или ``1`` (принят).
+        или ``1`` (принят). Отменённые запросы (статус ``2``) свободны.
         """
         return await self.request_repository.check_time_reservation(time=time, mentor_id=mentor_id)

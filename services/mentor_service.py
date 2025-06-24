@@ -112,9 +112,7 @@ class MentorService:
         await self.request_repository.mentor_response(request_id=request_id, response=response)
         if response == 1:
             logger.info(f"Запрос №{request_id} принят")
-        else:
-            logger.info(f"Запрос №{request_id} отклонён")
-            # Корректно очищаем слот времени, если заявка отклонена
+            # Корректно очищаем слот времени, если заявка подтверждена
             if request.call_time and request.mentor_id:
                 mentor_times = await self.mentor_time_service.get_all_mentor_time_by_mentor_id(request.mentor_id)
                 req_start = request.call_time.time()
@@ -124,7 +122,7 @@ class MentorService:
                         # Если заявка занимает весь слот — просто удалить
                         if mt.time_start == req_start and mt.time_end == req_end:
                             await self.mentor_time_service.mentor_time_repository.delete_mentor_time(mt.id)
-                            logger.info(f"Слот времени {mt.id} полностью удалён после отклонения заявки {request_id}")
+                            logger.info(f"Слот времени {mt.id} полностью удалён после подтверждения заявки {request_id}")
                         else:
                             # Разбиваем слот на два, если заявка занимает середину
                             old_start = mt.time_start
@@ -136,8 +134,32 @@ class MentorService:
                             if req_end < old_end:
                                 await self.mentor_time_service.mentor_time_repository.create_new_mentor_time(
                                     mt.day, req_end, old_end, mt.mentor_id)
-                            logger.info(f"Слот времени {mt.id} разбит после отклонения заявки {request_id}")
+                            logger.info(f"Слот времени {mt.id} разбит после подтверждения заявки {request_id}")
                         break
+        else:
+            logger.info(f"Запрос №{request_id} отклонён")
+
+    async def cancel_request(self, mentor_id: UUID, request_id: UUID) -> None:
+        """Отменить ранее подтверждённый запрос и вернуть слот времени."""
+        if not await self.mentor_repository.get_mentor_by_id(mentor_id):
+            logger.info(f"Ментора с id {mentor_id} не существует")
+            return
+        request = await self.request_repository.get_request_by_id(request_id)
+        if not request:
+            logger.info(f"Запроса №{request_id} не существует")
+            return
+        if request.response != 1:
+            logger.info(f"Запрос №{request_id} не находится в подтверждённом состоянии")
+            return
+        await self.request_repository.mentor_response(request_id=request_id, response=2)
+        if request.call_time and request.mentor_id:
+            await self.mentor_time_service.create_mentor_time(
+                request.call_time.isoweekday(),
+                request.call_time.time(),
+                (request.call_time + timedelta(minutes=30)).time(),
+                request.mentor_id,
+            )
+        logger.info(f"Запрос №{request_id} отменён и слот освобождён")
 
     async def update_mentor_info(self, mentor_id: UUID, info: str) -> None:
         """

@@ -84,6 +84,10 @@ class RequestRepository:
         return row[0]
 
     async def check_time_reservation(self, mentor_id: UUID, time: datetime) -> bool:
+        """Return True if there is a pending or accepted request at this time.
+
+        Requests with status ``2`` (cancelled) do not count as a reservation.
+        """
         stmt = select(Request).where(cast("ColumnElement[bool]", Request.call_time == time),
                                      cast("ColumnElement[bool]", Request.mentor_id == mentor_id))
 
