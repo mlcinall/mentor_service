@@ -17,6 +17,6 @@ class Request(Base, WithId):
     #if call_type == 0:
     call_time = Column(DateTime, nullable=True)
 
-    response = Column(Integer, nullable=False, default=0) # 0 -- not answered, 1-- yes, -1 -- no
+    response = Column(Integer, nullable=False, default=0) # 0 -- not answered, 1 -- accepted, -1 -- rejected, 2 -- cancelled
     mentor = relationship("Mentor", back_populates="requests")
 

@@ -349,3 +349,19 @@ async def respond_to_request(request_id: UUID, req: MentorRespondRequest, user_i
     except Exception as e:
         logger.error(f"Error responding to request: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@mentor_router.patch("/request/{request_id}/cancel")
+async def cancel_request(request_id: UUID, user_id: UUID = Depends(extract_user_id)):
+    """
+    Отменить ранее подтверждённую заявку.
+    Слот свободного времени восстанавливается.
+    Требуется авторизация (JWT).
+    """
+    try:
+        logger.info(f"Mentor {user_id} cancels request {request_id}")
+        await mentor_service.cancel_request(user_id, request_id)
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Error cancelling request: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
