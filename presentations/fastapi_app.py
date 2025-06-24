@@ -16,6 +16,7 @@ from services.mentor_time_service import MentorTimeService
 from presentations.routers.mentor_router import mentor_router
 from presentations.routers.student_router import student_router
 from presentations.routers.mentor_time_router import mentor_time_router
+from presentations.routers.favorite_router import favorite_router
 
 from utils.jwt_utils import extract_user_id
 from utils.jwt_auth import JWTAuthMiddleware
@@ -165,3 +166,4 @@ app.openapi_security = [{"HTTPBearer": []}]
 app.include_router(student_router, prefix="/mentor_service")
 app.include_router(mentor_router, prefix="/mentor_service")
 app.include_router(mentor_time_router, prefix="/mentor_service")
+app.include_router(favorite_router, prefix="/mentor_service")
