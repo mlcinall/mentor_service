@@ -1,6 +1,6 @@
 from infrastructure.db.connection import pg_connection
 from persistent.db.mentor import Mentor
-from sqlalchemy import insert, select, UUID, update
+from sqlalchemy import insert, select, UUID, update, func
 from typing import cast, Optional
 
 
@@ -63,3 +63,25 @@ class MentorRepository:
         async with self._sessionmaker() as session:
             await session.execute(stmp)
             await session.commit()
+
+    async def get_mentors_by_name(self, name: str) -> list[Mentor]:
+        """
+        Поиск менторов по имени (частичное совпадение, регистронезависимо).
+        """
+        stmt = select(Mentor).where(func.lower(Mentor.name).like(f"%{name.lower()}%"))
+        async with self._sessionmaker() as session:
+            resp = await session.execute(stmt)
+            rows = resp.fetchall()
+            mentors = [row[0] for row in rows]
+            return mentors
+
+    async def get_mentors_by_specification(self, specification: str) -> list[Mentor]:
+        """
+        Поиск менторов по роли (specification, частичное совпадение, регистронезависимо).
+        """
+        stmt = select(Mentor).where(func.lower(Mentor.specification).like(f"%{specification.lower()}%"))
+        async with self._sessionmaker() as session:
+            resp = await session.execute(stmt)
+            rows = resp.fetchall()
+            mentors = [row[0] for row in rows]
+            return mentors

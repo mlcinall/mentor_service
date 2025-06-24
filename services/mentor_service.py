@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import List, Optional
 from loguru import logger
@@ -89,19 +89,44 @@ class MentorService:
     async def response_to_request(self, mentor_id: UUID, request_id: UUID, response: int) -> None:
         """
         Отмечает статус запроса. 1 -- принят, -1 -- отклонён
+        Если отклонено — слот времени освобождается (разбивается или удаляется).
         """
         if not await self.mentor_repository.get_mentor_by_id(mentor_id):
             logger.info(f"Ментора с id {mentor_id} не существует")
             return
-        if not await self.request_repository.get_request_by_id(request_id):
+        request = await self.request_repository.get_request_by_id(request_id)
+        if not request:
             logger.info(f"Запроса №{request_id} не существует")
             return
-
         await self.request_repository.mentor_response(request_id=request_id, response=response)
         if response == 1:
             logger.info(f"Запрос №{request_id} принят")
         else:
             logger.info(f"Запрос №{request_id} отклонён")
+            # Корректно очищаем слот времени, если заявка отклонена
+            if request.call_time and request.mentor_id:
+                mentor_times = await self.mentor_time_service.get_all_mentor_time_by_mentor_id(request.mentor_id)
+                req_start = request.call_time.time()
+                req_end = (request.call_time + timedelta(minutes=30)).time()
+                for mt in mentor_times:
+                    if mt.time_start <= req_start and req_end <= mt.time_end and mt.day == request.call_time.isoweekday():
+                        # Если заявка занимает весь слот — просто удалить
+                        if mt.time_start == req_start and mt.time_end == req_end:
+                            await self.mentor_time_service.mentor_time_repository.delete_mentor_time(mt.id)
+                            logger.info(f"Слот времени {mt.id} полностью удалён после отклонения заявки {request_id}")
+                        else:
+                            # Разбиваем слот на два, если заявка занимает середину
+                            old_start = mt.time_start
+                            old_end = mt.time_end
+                            await self.mentor_time_service.mentor_time_repository.delete_mentor_time(mt.id)
+                            if old_start < req_start:
+                                await self.mentor_time_service.mentor_time_repository.create_new_mentor_time(
+                                    mt.day, old_start, req_start, mt.mentor_id)
+                            if req_end < old_end:
+                                await self.mentor_time_service.mentor_time_repository.create_new_mentor_time(
+                                    mt.day, req_end, old_end, mt.mentor_id)
+                            logger.info(f"Слот времени {mt.id} разбит после отклонения заявки {request_id}")
+                        break
 
     async def update_mentor_info(self, mentor_id: UUID, info: str) -> None:
         """

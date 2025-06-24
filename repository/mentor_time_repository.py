@@ -1,6 +1,6 @@
 from infrastructure.db.connection import pg_connection
 from persistent.db.mentor_time import MentorTime
-from sqlalchemy import insert, select, UUID, update
+from sqlalchemy import insert, select, UUID, update, delete
 from typing import cast, Optional
 from datetime import time as Time
 
@@ -65,3 +65,9 @@ class MentorTimeRepository:
 
         row = resp.fetchone()
         return row[0] if row else None
+
+    async def delete_mentor_time(self, mentor_time_id: UUID) -> None:
+        stmp = delete(MentorTime).where(MentorTime.id == mentor_time_id)
+        async with self._sessionmaker() as session:
+            await session.execute(stmp)
+            await session.commit()

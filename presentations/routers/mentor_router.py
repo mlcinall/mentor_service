@@ -23,6 +23,7 @@ class MentorDto(BaseModel):
     telegram_id: str
     name: str
     info: str
+    specification: Optional[str] = None
 
 
 class RequestDto(BaseModel):
@@ -43,6 +44,7 @@ class MentorCreatePostRequest(BaseModel):
     telegram_id: str
     name: str
     info: str
+    specification: Optional[str] = None
 
 
 class CreateMentorPostResponse(BaseModel):
@@ -53,12 +55,14 @@ class GetMentorByIdGetResponse(BaseModel):
     telegram_id: str
     name: str
     info: str
+    specification: Optional[str] = None
 
 
 class GetMentorByTelegramIdGetResponse(BaseModel):
     telegram_id: str
     name: str
     info: str
+    specification: Optional[str] = None
 
 
 class CountMentorRequestByIdGetResponse(BaseModel):
@@ -78,6 +82,10 @@ class SyncMentorExternalRequest(BaseModel):
     external_user_id: str
 
 
+class MentorRespondRequest(BaseModel):
+    response: int  # 1 — принять, -1 — отклонить
+
+
 @mentor_router.get("/", response_model=MentorGetAllResponse)
 async def get_all(user_id: UUID = Depends(extract_user_id)):
     """
@@ -95,7 +103,8 @@ async def get_all(user_id: UUID = Depends(extract_user_id)):
             mentors=[MentorDto(id=mentor.id,
                                telegram_id=mentor.telegram_id,
                                name=mentor.name,
-                               info=mentor.info)
+                               info=mentor.info,
+                               specification=mentor.specification)
                      for mentor in mentors]
         )
     except HTTPException:
@@ -152,6 +161,7 @@ async def get_by_id(mentor_id: UUID, user_id: UUID = Depends(extract_user_id)):
             telegram_id=mentor.telegram_id,
             name=mentor.name,
             info=mentor.info,
+            specification=mentor.specification
         )
     except HTTPException:
         raise
@@ -182,6 +192,7 @@ async def get_by_tg_id(telegram_id: str, user_id: UUID = Depends(extract_user_id
             telegram_id=mentor.telegram_id,
             name=mentor.name,
             info=mentor.info,
+            specification=mentor.specification
         )
     except HTTPException:
         raise
@@ -279,4 +290,62 @@ async def sync_mentor_external(mentor_id: UUID, req: SyncMentorExternalRequest =
         return {"status": "ok"}
     except Exception as e:
         logger.error(f"Error syncing mentor from external: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@mentor_router.get("/search/by_name", response_model=MentorGetAllResponse)
+async def search_by_name(name: str, user_id: UUID = Depends(extract_user_id)):
+    """
+    Поиск менторов по имени (частичное совпадение, регистронезависимо).
+    """
+    try:
+        logger.info(f"User {user_id} searching mentors by name: {name}")
+        mentors = await mentor_service.find_mentors_by_name(name)
+        return MentorGetAllResponse(
+            mentors=[MentorDto(id=mentor.id,
+                               telegram_id=mentor.telegram_id,
+                               name=mentor.name,
+                               info=mentor.info,
+                               specification=mentor.specification)
+                     for mentor in mentors]
+        )
+    except Exception as e:
+        logger.error(f"Error searching mentors by name: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@mentor_router.get("/search/by_role", response_model=MentorGetAllResponse)
+async def search_by_role(role: str, user_id: UUID = Depends(extract_user_id)):
+    """
+    Поиск менторов по роли (specification, частичное совпадение, регистронезависимо).
+    """
+    try:
+        logger.info(f"User {user_id} searching mentors by role: {role}")
+        mentors = await mentor_service.find_mentors_by_specification(role)
+        return MentorGetAllResponse(
+            mentors=[MentorDto(id=mentor.id,
+                               telegram_id=mentor.telegram_id,
+                               name=mentor.name,
+                               info=mentor.info,
+                               specification=mentor.specification)
+                     for mentor in mentors]
+        )
+    except Exception as e:
+        logger.error(f"Error searching mentors by role: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@mentor_router.patch("/request/{request_id}/respond")
+async def respond_to_request(request_id: UUID, req: MentorRespondRequest, user_id: UUID = Depends(extract_user_id)):
+    """
+    Ментор принимает или отклоняет заявку (request). 1 — принять, -1 — отклонить.
+    Если отклонено — ячейка времени освобождается, если принято — бронится.
+    Требуется авторизация (JWT).
+    """
+    try:
+        logger.info(f"Mentor {user_id} responds to request {request_id} with response {req.response}")
+        await mentor_service.response_to_request(user_id, request_id, req.response)
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Error responding to request: {e}")
         raise HTTPException(status_code=400, detail=str(e))
