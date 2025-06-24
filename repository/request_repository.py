@@ -94,6 +94,7 @@ class RequestRepository:
             requests = [row[0] for row in rows]
 
             for request in requests:
-                if request.response != 0:
+                if request.response in (0, 1):
                     return True
+
             return False

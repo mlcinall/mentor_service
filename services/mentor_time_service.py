@@ -132,5 +132,7 @@ class MentorTimeService:
     async def check_time_reservation(self, mentor_id: UUID, time: DateTime) -> bool:
         """
         Проверка занятости времени. True -- занято, False -- не занято.
+        Занятым считается время с запросами в статусе ``0`` (ожидает ответа)
+        или ``1`` (принят).
         """
         return await self.request_repository.check_time_reservation(time=time, mentor_id=mentor_id)
