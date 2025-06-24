@@ -3,7 +3,9 @@ create table mentors (
     id uuid primary key,
     telegram_id varchar not null unique,
     name varchar not null,
-    info varchar not null
+    info varchar not null,
+    about text,
+    specification text
 );
 
 -- Таблица mentor_time

@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import List, Optional
 from loguru import logger
 from sqlalchemy import UUID
+import httpx
 
 from persistent.db.mentor import Mentor
 from persistent.db.request import Request
@@ -101,3 +102,23 @@ class MentorService:
             logger.info(f"Запрос №{request_id} принят")
         else:
             logger.info(f"Запрос №{request_id} отклонён")
+
+    async def update_mentor_info(self, mentor_id: UUID, info: str) -> None:
+        """
+        Обновляет markdown-информацию о себе у ментора.
+        """
+        await self.mentor_repository.update_mentor_info(mentor_id, info)
+        logger.info(f"Ментор {mentor_id} обновил информацию о себе.")
+
+    async def sync_mentor_from_external(self, mentor_id: UUID, external_user_id: str) -> None:
+        url = f"http://85.198.82.236/auth/api/get_user/{external_user_id}"
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            data = resp.json()
+        about = data.get("about")
+        specification = data.get("specification")
+        name = data.get("name")
+        telegram = data.get("telegram")
+        await self.mentor_repository.update_mentor_external_fields(mentor_id, about, specification, name, telegram)
+        logger.info(f"Mentor {mentor_id} synced from external profile {external_user_id}")

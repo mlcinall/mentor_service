@@ -9,5 +9,7 @@ class Mentor(Base, WithId):
     telegram_id = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     info = Column(Text, nullable=False)
+    about = Column(Text, nullable=True)
+    specification = Column(Text, nullable=True)
     requests = relationship("Request", back_populates="mentor")
     time = relationship("MentorTime", back_populates="mentor")

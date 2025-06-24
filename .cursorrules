@@ -1,5 +1,5 @@
 после внесения изменений необходимо выполнить следующие действия:
-    docker build . -t с тегом в формате auxxxxx/itam_mentor_serviceYYYYMMDDHHMM (временная метка) 
+    docker build . -t с тегом в формате chuvirla1453/itam_mentor_serviceYYYYMMDDHHMM (временная метка) временную метку бери из системы 
     вставь новый тег в файл docker-compose.yml
     docker compose up -d
 никогда не делай рестарт отдельного контейнера, только докер компоуз

@@ -10,7 +10,7 @@ volumes:
 services:
   backend:
     container_name: mentor-backend
-    image: auxxxxx/itam_mentor_service202504032057
+    image: chuvirla1453/itam_mentor_service20250624151010
     restart: always
     ports:
       - "8000:8000"

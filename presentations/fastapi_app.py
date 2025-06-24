@@ -160,6 +160,6 @@ app.openapi_components = {
 app.openapi_security = [{"HTTPBearer": []}]
 
 # Create dependencies for routers
-app.include_router(student_router)
-app.include_router(mentor_router)
-app.include_router(mentor_time_router)
+app.include_router(student_router, prefix="/mentor_service")
+app.include_router(mentor_router, prefix="/mentor_service")
+app.include_router(mentor_time_router, prefix="/mentor_service")

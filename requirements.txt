@@ -1,4 +1,4 @@
-asyncpg==0.29.0
+asyncpg
 fastapi==0.115.0
 loguru==0.7.2
 pydantic==2.7.0
@@ -10,3 +10,9 @@ python-jose==3.3.0
 psycopg2-binary==2.9.9
 dynaconf==3.2.4
 pyjwt==2.8.0
+httpx
+starlette
+python-dotenv
+greenlet
+typing-extensions
+aiosqlite

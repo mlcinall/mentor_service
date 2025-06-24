@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 from pydantic import BaseModel
 from loguru import logger
 
@@ -12,7 +12,7 @@ from utils.jwt_utils import extract_user_id
 mentor_service = MentorService()
 
 mentor_router = APIRouter(
-    prefix="/mentor",
+    prefix="/mentor_service",
     tags=["Mentor"],
     responses={404: {"description": "Not Found"}},
 )
@@ -68,6 +68,14 @@ class CountMentorRequestByIdGetResponse(BaseModel):
 
 class GetMentorRequestsByIdGetResponse(BaseModel):
     requests: List[RequestDto]
+
+
+class UpdateMentorInfoRequest(BaseModel):
+    info: str
+
+
+class SyncMentorExternalRequest(BaseModel):
+    external_user_id: str
 
 
 @mentor_router.get("/", response_model=MentorGetAllResponse)
@@ -241,4 +249,34 @@ async def get_all_requests_by_id(mentor_id: UUID, user_id: UUID = Depends(extrac
         raise
     except Exception as e:
         logger.error(f"Error retrieving mentor requests: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@mentor_router.patch("/{mentor_id}/info")
+async def update_mentor_info(mentor_id: UUID, req: UpdateMentorInfoRequest, user_id: UUID = Depends(extract_user_id)):
+    """
+    Обновить markdown-информацию о себе у ментора.
+    Требуется авторизация (JWT).
+    """
+    try:
+        logger.info(f"User {user_id} updating info for mentor {mentor_id}")
+        await mentor_service.update_mentor_info(mentor_id, req.info)
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Error updating mentor info: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@mentor_router.post("/{mentor_id}/sync_external")
+async def sync_mentor_external(mentor_id: UUID, req: SyncMentorExternalRequest = Body(...), user_id: UUID = Depends(extract_user_id)):
+    """
+    Синхронизировать данные ментора с внешним сервисом профилей по external_user_id.
+    Требуется авторизация (JWT).
+    """
+    try:
+        logger.info(f"User {user_id} syncing mentor {mentor_id} from external user {req.external_user_id}")
+        await mentor_service.sync_mentor_from_external(mentor_id, req.external_user_id)
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Error syncing mentor from external: {e}")
         raise HTTPException(status_code=400, detail=str(e))
