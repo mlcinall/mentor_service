@@ -31,3 +31,12 @@ create table requests (
     response integer not null default 0
 );
 
+
+-- Таблица favorite_mentors
+create table favorite_mentors (
+    id uuid primary key,
+    user_id uuid not null,
+    mentor_id uuid references mentors(id),
+    unique (user_id, mentor_id),
+    foreign key (mentor_id) references mentors(id) on delete cascade
+);
