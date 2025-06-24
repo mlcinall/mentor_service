@@ -158,3 +158,17 @@ class MentorService:
         telegram = data.get("telegram")
         await self.mentor_repository.update_mentor_external_fields(mentor_id, about, specification, name, telegram)
         logger.info(f"Mentor {mentor_id} synced from external profile {external_user_id}")
+
+    async def find_mentors_by_name(self, name: str) -> List[Mentor]:
+        """Поиск менторов по имени (частичное совпадение, регистронезависимо)."""
+        mentors = await self.mentor_repository.get_mentors_by_name(name)
+        if not mentors:
+            logger.warning(f"Менторы с именем {name} не найдены")
+        return mentors
+
+    async def find_mentors_by_specification(self, specification: str) -> List[Mentor]:
+        """Поиск менторов по роли (specification, частичное совпадение, регистронезависимо)."""
+        mentors = await self.mentor_repository.get_mentors_by_specification(specification)
+        if not mentors:
+            logger.warning(f"Менторы со специализацией {specification} не найдены")
+        return mentors
