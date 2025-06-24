@@ -72,7 +72,8 @@ class StudentService:
             logger.warning("Данное время у ментора занято")
             return
 
-        if await self.request_repository.check_time_reservation(call_time):
+        if await self.request_repository.check_time_reservation(
+                mentor_id=mentor_id, time=call_time):
             logger.warning("Данное время у ментора забронировано")
             return
 
