@@ -66,15 +66,24 @@ class MentorService:
     async def count_requests(self, mentor_id: UUID) -> dict:
         """
         Возвращает количество неотвеченных запросов.
+
+        Возвращает словарь с ключами `call_requests` и `message_requests`.
         """
         mentor_requests = await self.request_repository.get_all_requests_by_mentor_id(mentor_id)
 
-        call_type_count = defaultdict(int)
+        call_requests = 0
+        message_requests = 0
         for request in mentor_requests:
             if request.response == 0:
-                call_type_count[request.call_type] += 1
+                if request.call_type == 0:
+                    call_requests += 1
+                else:
+                    message_requests += 1
 
-        return dict(call_type_count)
+        return {
+            "call_requests": call_requests,
+            "message_requests": message_requests,
+        }
 
     async def get_requests(self, mentor_id: UUID) -> List[Request]:
         """

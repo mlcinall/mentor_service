@@ -220,8 +220,8 @@ async def count_by_id(mentor_id: UUID, user_id: UUID = Depends(extract_user_id))
             raise HTTPException(status_code=404, detail="Хз что не так, если честно")
 
         return CountMentorRequestByIdGetResponse(
-            call_requests=mentor_requests_cnt[0],
-            message_requests=mentor_requests_cnt[1],
+            call_requests=mentor_requests_cnt["call_requests"],
+            message_requests=mentor_requests_cnt["message_requests"],
         )
     except HTTPException:
         raise
