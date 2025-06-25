@@ -55,11 +55,11 @@ def create_tables():
         call_type INTEGER NOT NULL,
         time_sended TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         mentor_id TEXT,
-        FOREIGN KEY (mentor_id) REFERENCES mentors(id) ON DELETE CASCADE,
         guest_id TEXT NOT NULL,
         description TEXT NOT NULL,
         call_time TIMESTAMP,
-        response INTEGER NOT NULL DEFAULT 0
+        response INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (mentor_id) REFERENCES mentors(id) ON DELETE CASCADE
     )
     ''')
     
