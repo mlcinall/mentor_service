@@ -31,17 +31,17 @@ class MentorDto(BaseModel):
 
 
 def build_mentor_dto(mentor) -> MentorDto:
-    """Convert mentor ORM instance to MentorDto with optional fields."""
+    """Convert mentor ORM instance to MentorDto including optional fields."""
     return MentorDto(
         id=mentor.id,
         telegram_id=mentor.telegram_id,
         name=mentor.name,
         info=mentor.info,
         specification=getattr(mentor, "specification", None),
-        role=getattr(mentor, "role", None),
-        experience_periods=getattr(mentor, "experience_periods", None),
-        hackathons=getattr(mentor, "hackathons", None),
-        work=getattr(mentor, "work", None),
+        role=mentor.role,
+        experience_periods=mentor.experience_periods,
+        hackathons=mentor.hackathons,
+        work=mentor.work,
     )
 
 
@@ -126,8 +126,8 @@ async def get_all(user_id: UUID = Depends(extract_user_id)):
     try:
         logger.info(f"User {user_id} retrieving all mentors")
         mentors = await mentor_service.get_all_mentors()
-
-        return MentorGetAllResponse(mentors=[build_mentor_dto(mentor) for mentor in mentors])
+        mentor_dtos = [build_mentor_dto(mentor) for mentor in mentors]
+        return MentorGetAllResponse(mentors=mentor_dtos)
     except HTTPException:
         raise
     except Exception as e:
@@ -179,8 +179,8 @@ async def get_by_id(mentor_id: UUID, user_id: UUID = Depends(extract_user_id)):
             logger.warning(f"Mentor with ID {mentor_id} not found")
             raise HTTPException(status_code=404, detail="Ментор не найден")
 
-        dto = build_mentor_dto(mentor)
-        return GetMentorByIdGetResponse(**dto.model_dump(exclude={"id"}))
+        mentor_dto = build_mentor_dto(mentor)
+        return GetMentorByIdGetResponse(**mentor_dto.model_dump(exclude={"id"}))
     except HTTPException:
         raise
     except Exception as e:
@@ -206,8 +206,8 @@ async def get_by_tg_id(telegram_id: str, user_id: UUID = Depends(extract_user_id
             logger.warning(f"Mentor with telegram ID {telegram_id} not found")
             raise HTTPException(status_code=404, detail="Ментор не найден")
 
-        dto = build_mentor_dto(mentor)
-        return GetMentorByTelegramIdGetResponse(**dto.model_dump(exclude={"id"}))
+        mentor_dto = build_mentor_dto(mentor)
+        return GetMentorByTelegramIdGetResponse(**mentor_dto.model_dump(exclude={"id"}))
     except HTTPException:
         raise
     except Exception as e:
@@ -321,7 +321,8 @@ async def search_by_name(name: str, user_id: UUID = Depends(extract_user_id)):
     try:
         logger.info(f"User {user_id} searching mentors by name: {name}")
         mentors = await mentor_service.find_mentors_by_name(name)
-        return MentorGetAllResponse(mentors=[build_mentor_dto(mentor) for mentor in mentors])
+        mentor_dtos = [build_mentor_dto(mentor) for mentor in mentors]
+        return MentorGetAllResponse(mentors=mentor_dtos)
     except Exception as e:
         logger.error(f"Error searching mentors by name: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -335,7 +336,8 @@ async def search_by_role(role: str, user_id: UUID = Depends(extract_user_id)):
     try:
         logger.info(f"User {user_id} searching mentors by role: {role}")
         mentors = await mentor_service.find_mentors_by_specification(role)
-        return MentorGetAllResponse(mentors=[build_mentor_dto(mentor) for mentor in mentors])
+        mentor_dtos = [build_mentor_dto(mentor) for mentor in mentors]
+        return MentorGetAllResponse(mentors=mentor_dtos)
     except Exception as e:
         logger.error(f"Error searching mentors by role: {e}")
         raise HTTPException(status_code=400, detail=str(e))
