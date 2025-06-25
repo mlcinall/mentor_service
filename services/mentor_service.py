@@ -168,6 +168,28 @@ class MentorService:
         await self.mentor_repository.update_mentor_info(mentor_id, info)
         logger.info(f"Ментор {mentor_id} обновил информацию о себе.")
 
+    async def update_mentor_details(
+        self,
+        mentor_id: UUID,
+        about: Optional[str] = None,
+        specification: Optional[str] = None,
+        role: Optional[str] = None,
+        experience_periods: Optional[str] = None,
+        hackathons: Optional[str] = None,
+        work: Optional[str] = None,
+    ) -> None:
+        """Update mentor optional details, skipping None values."""
+        await self.mentor_repository.update_mentor_additional_fields(
+            mentor_id=mentor_id,
+            about=about,
+            specification=specification,
+            role=role,
+            experience_periods=experience_periods,
+            hackathons=hackathons,
+            work=work,
+        )
+        logger.info(f"Ментор {mentor_id} обновил дополнительные поля")
+
     async def sync_mentor_from_external(self, mentor_id: UUID, external_user_id: str) -> None:
         url = f"http://85.198.82.236/auth/api/get_user/{external_user_id}"
         async with httpx.AsyncClient() as client:
