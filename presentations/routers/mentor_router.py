@@ -24,6 +24,10 @@ class MentorDto(BaseModel):
     name: str
     info: str
     specification: Optional[str] = None
+    role: Optional[str] = None
+    experience_periods: Optional[str] = None
+    hackathons: Optional[str] = None
+    work: Optional[str] = None
 
 
 class RequestDto(BaseModel):
@@ -56,6 +60,10 @@ class GetMentorByIdGetResponse(BaseModel):
     name: str
     info: str
     specification: Optional[str] = None
+    role: Optional[str] = None
+    experience_periods: Optional[str] = None
+    hackathons: Optional[str] = None
+    work: Optional[str] = None
 
 
 class GetMentorByTelegramIdGetResponse(BaseModel):
@@ -63,6 +71,10 @@ class GetMentorByTelegramIdGetResponse(BaseModel):
     name: str
     info: str
     specification: Optional[str] = None
+    role: Optional[str] = None
+    experience_periods: Optional[str] = None
+    hackathons: Optional[str] = None
+    work: Optional[str] = None
 
 
 class CountMentorRequestByIdGetResponse(BaseModel):
@@ -104,7 +116,11 @@ async def get_all(user_id: UUID = Depends(extract_user_id)):
                                telegram_id=mentor.telegram_id,
                                name=mentor.name,
                                info=mentor.info,
-                               specification=mentor.specification)
+                               specification=mentor.specification,
+                               role=getattr(mentor, "role", None),
+                               experience_periods=getattr(mentor, "experience_periods", None),
+                               hackathons=getattr(mentor, "hackathons", None),
+                               work=getattr(mentor, "work", None))
                      for mentor in mentors]
         )
     except HTTPException:
@@ -161,7 +177,11 @@ async def get_by_id(mentor_id: UUID, user_id: UUID = Depends(extract_user_id)):
             telegram_id=mentor.telegram_id,
             name=mentor.name,
             info=mentor.info,
-            specification=mentor.specification
+            specification=mentor.specification,
+            role=getattr(mentor, "role", None),
+            experience_periods=getattr(mentor, "experience_periods", None),
+            hackathons=getattr(mentor, "hackathons", None),
+            work=getattr(mentor, "work", None)
         )
     except HTTPException:
         raise
@@ -192,7 +212,11 @@ async def get_by_tg_id(telegram_id: str, user_id: UUID = Depends(extract_user_id
             telegram_id=mentor.telegram_id,
             name=mentor.name,
             info=mentor.info,
-            specification=mentor.specification
+            specification=mentor.specification,
+            role=getattr(mentor, "role", None),
+            experience_periods=getattr(mentor, "experience_periods", None),
+            hackathons=getattr(mentor, "hackathons", None),
+            work=getattr(mentor, "work", None)
         )
     except HTTPException:
         raise
@@ -306,7 +330,11 @@ async def search_by_name(name: str, user_id: UUID = Depends(extract_user_id)):
                                telegram_id=mentor.telegram_id,
                                name=mentor.name,
                                info=mentor.info,
-                               specification=mentor.specification)
+                               specification=mentor.specification,
+                               role=getattr(mentor, "role", None),
+                               experience_periods=getattr(mentor, "experience_periods", None),
+                               hackathons=getattr(mentor, "hackathons", None),
+                               work=getattr(mentor, "work", None))
                      for mentor in mentors]
         )
     except Exception as e:
@@ -327,7 +355,11 @@ async def search_by_role(role: str, user_id: UUID = Depends(extract_user_id)):
                                telegram_id=mentor.telegram_id,
                                name=mentor.name,
                                info=mentor.info,
-                               specification=mentor.specification)
+                               specification=mentor.specification,
+                               role=getattr(mentor, "role", None),
+                               experience_periods=getattr(mentor, "experience_periods", None),
+                               hackathons=getattr(mentor, "hackathons", None),
+                               work=getattr(mentor, "work", None))
                      for mentor in mentors]
         )
     except Exception as e:
