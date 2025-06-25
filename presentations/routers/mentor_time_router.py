@@ -31,6 +31,11 @@ class MentorDto(BaseModel):
     telegram_id: str
     name: str
     info: str
+    specification: Optional[str] = None
+    role: Optional[str] = None
+    experience_periods: Optional[str] = None
+    hackathons: Optional[str] = None
+    work: Optional[str] = None
 
 
 class RequestDto(BaseModel):
