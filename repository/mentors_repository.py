@@ -58,7 +58,14 @@ class MentorRepository:
             await session.execute(stmp)
             await session.commit()
 
-    async def update_mentor_external_fields(self, mentor_id: UUID, about: str, specification: str, name: str, telegram_id: str) -> None:
+    async def update_mentor_external_fields(
+        self,
+        mentor_id: UUID,
+        about: Optional[str],
+        specification: Optional[str],
+        name: Optional[str],
+        telegram_id: Optional[str],
+    ) -> None:
         stmp = update(Mentor).where(Mentor.id == mentor_id).values(about=about, specification=specification, name=name, telegram_id=telegram_id)
         async with self._sessionmaker() as session:
             await session.execute(stmp)
